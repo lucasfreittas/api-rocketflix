@@ -4,6 +4,8 @@ const express = require('express');
 const routes = require('./routes');
 const PORT = 3000;
 
+const database = require('./database');
+
 const app = express();
 app.use(express.json());
 app.use(routes);
@@ -24,6 +26,6 @@ app.use((error, request, response, next) => {
         });
 });
 
-
+database();
 app.listen(PORT, () => console.log(`Server is running on PORT: ${PORT}`));
 
