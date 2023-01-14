@@ -1,5 +1,6 @@
 const knex = require('../database/knex')
 const AppError = require('../utils/AppError');
+const {hash, compare} = require('bcryptjs');
 
 class userController{
     async create(request, response){
@@ -15,12 +16,15 @@ class userController{
         if(emailChecker){
             throw new AppError('This email is already in use')
         };  
-        
+
+//---Encrypting password      
+       const hashedPassword = await hash(password, 8)
+
 //---Adding user in table
         await knex('users').insert({
             name,
             email,
-            password
+            password: hashedPassword
         });
 
         return response.json()
@@ -28,9 +32,47 @@ class userController{
 
 
     async update(request, response){
-        return response.json('Cheguei')
-    };
-};
+        const {name, email, password, old_password} = request.body;
+        const {id} = request.params;
+
+
+//-----  Name email function
+        if(name){
+            await knex('users').where({id}).first().update({name});
+        }
+
+//-----  Edit email function
+        
+        if(email){
+        const validEmail = await knex.select('email').from('users').where('email', email)
+        if(validEmail.length > 0){
+            throw new AppError('Email já está em uso')
+        }else{
+            await knex('users').where({id}).first().update({email});
+            }
+        }
+
+
+//-----  Edit password function
+        if(password && !old_password){
+            throw new AppError('Please insert the password')
+        }
+
+        if(password && old_password){
+        const user_password = await knex('users').where({id}).select('users.password').first()
+        const checkerPassword = await compare(old_password, user_password.password)
+        if(!checkerPassword){
+            throw new AppError('The passwords doesnt match')
+        }
+
+        const newPassword = await hash(password, 8)
+        await knex('users').where({id}).first().update({password: newPassword});
+        
+        
+        }
+        return response.json();
+    }
+}
 
 
 module.exports = userController;
