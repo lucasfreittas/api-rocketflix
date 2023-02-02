@@ -4,7 +4,7 @@ const AppError = require('../utils/AppError');
 class notesController{
     async create(request, response){
         const {title, description, rating, tags} = request.body;
-        const {user_id} = request.params;
+        const user_id = request.user.id;
 
 //--- Create Note
         const note_id = await knex('movie_notes').insert({title, description, rating, user_id});
@@ -23,15 +23,12 @@ class notesController{
     };
 
     async read(request, response){
-        const{id} = request.params;
+        const {id} = request.params;
         
         const movie_note = await knex('movie_notes').where({id}).first();
         const tags = await knex('tags').where({note_id: id}).orderBy('name');
 
-        return response.json({
-            movie_note,
-            tags
-        });
+        return response.json({ movie_note, tags });
     };
 
     async delete(request, response){
@@ -43,12 +40,14 @@ class notesController{
     };
 
     async search(request, response){
-        const {user_id, title, tags} = request.query;
+        const { title, tags} = request.query;
+        const user_id = request.user.id;
 
         let notes;
 
         if(tags){
             const filterTags = tags.split(',').map(tag => tag.trim());
+            
             notes = await knex('tags').select([
                 "movie_notes.id",
                 "movie_notes.title",

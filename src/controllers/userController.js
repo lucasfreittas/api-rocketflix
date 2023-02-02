@@ -33,9 +33,9 @@ class userController{
 
     async update(request, response){
         const {name, email, password, old_password} = request.body;
-        const {id} = request.params;
+        const user_id = request.user.id;
 
-        const user = await knex('users').where({id}).first()
+        const user = await knex('users').where({id: user_id}).first()
        
 //-----  Update email function
 
@@ -44,14 +44,14 @@ class userController{
             if(userByEmail && userByEmail.id !== user.id){
                 throw new AppError('Email já está em uso')
             }else{
-                await knex('users').where({id}).first().update({email});
+                await knex('users').where({id: user_id}).first().update({email});
                 }
             }
         
 //-----  Update Name function
 
         if(name){
-            await knex('users').where({id}).first().update({name});
+            await knex('users').where({id: user_id}).first().update({name});
         }
 
 
@@ -62,14 +62,14 @@ class userController{
         }
 
         if(password && old_password){
-        const user_password = await knex('users').where({id}).select('users.password').first()
+        const user_password = await knex('users').where({id: user_id}).select('users.password').first()
         const checkerPassword = await compare(old_password, user_password.password)
         if(!checkerPassword){
             throw new AppError('The passwords doesnt match')
         }
 
         const newPassword = await hash(password, 8)
-        await knex('users').where({id}).first().update({password: newPassword});
+        await knex('users').where({id: user_id}).first().update({password: newPassword});
         
         
         }
