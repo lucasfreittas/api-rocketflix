@@ -35,27 +35,30 @@ class userController{
         const {name, email, password, old_password} = request.body;
         const {id} = request.params;
 
+        const user = await knex('users').where({id}).first()
+       
+//-----  Update email function
 
-//-----  Name email function
+        if(email){
+            const userByEmail = await knex('users').where({email}).first();
+            if(userByEmail && userByEmail.id !== user.id){
+                throw new AppError('Email já está em uso')
+            }else{
+                await knex('users').where({id}).first().update({email});
+                }
+            }
+        
+//-----  Update Name function
+
         if(name){
             await knex('users').where({id}).first().update({name});
         }
 
-//-----  Edit email function
-        
-        if(email){
-        const validEmail = await knex.select('email').from('users').where('email', email)
-        if(validEmail.length > 0){
-            throw new AppError('Email já está em uso')
-        }else{
-            await knex('users').where({id}).first().update({email});
-            }
-        }
-
 
 //-----  Edit password function
+
         if(password && !old_password){
-            throw new AppError('Please insert the password')
+            throw new AppError('Please insert the old password')
         }
 
         if(password && old_password){
