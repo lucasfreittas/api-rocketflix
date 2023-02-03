@@ -13,7 +13,7 @@ const uploadConfig = require('../configs/uploads');
 const upload = multer(uploadConfig.MULTER);
 
 
-userRoutes.get('/', userController.create )
+userRoutes.post('/', userController.create )
 userRoutes.put('/', checkToken, userController.update )
 userRoutes.patch('/avatar', checkToken, upload.single('avatar'), avatarController.update);
 
