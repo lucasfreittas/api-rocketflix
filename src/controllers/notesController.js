@@ -52,6 +52,7 @@ class notesController{
                 "movie_notes.id",
                 "movie_notes.title",
                 "movie_notes.user_id",
+                "movie_notes.description"
             ])
             .where("movie_notes.user_id", user_id)
             .whereLike("movie_notes.title", `%${title}%`)
